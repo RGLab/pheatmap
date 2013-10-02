@@ -21,7 +21,7 @@
     number_format = "\%.2f",
     fontsize_number = 0.8 * fontsize, filename = NA,
     width = NA, height = NA, row_annotation = NA,
-    row_annotation_legend = FALSE,
+    row_annotation_legend = TRUE,
     row_annotation_colors = NA, ...)
 }
 \arguments{
