@@ -334,7 +334,7 @@ heatmap_motor = function(matrix, border_color, cellwidth, cellheight, tree_col, 
     
     # print(sprintf("height:%f width:%f", height, width))
     f(filename, height = height, width = width)
-    heatmap_motor(matrix, cellwidth = cellwidth, cellheight = cellheight, border_color = border_color, tree_col = tree_col, tree_row = tree_row, treeheight_col = treeheight_col, treeheight_row = treeheight_row, breaks = breaks, color = color, legend = legend, annotation = annotation, annotation_colors = annotation_colors, annotation_legend = annotation_legend, filename = NA, main = main, fontsize = fontsize, fontsize_row = fontsize_row, fontsize_col = fontsize_col, fmat = fmat, fontsize_number =  fontsize_number, row_annotation = row_annotation, row_annotation_legend = row_annotation_legend, ...)
+    heatmap_motor(matrix, cellwidth = cellwidth, cellheight = cellheight, border_color = border_color, tree_col = tree_col, tree_row = tree_row, treeheight_col = treeheight_col, treeheight_row = treeheight_row, breaks = breaks, color = color, legend = legend, annotation = annotation, annotation_colors = annotation_colors, annotation_legend = annotation_legend, filename = NA, main = main, fontsize = fontsize, fontsize_row = fontsize_row, fontsize_col = fontsize_col, fmat = fmat, fontsize_number =  fontsize_number, row_annotation = row_annotation, row_annotation_legend = row_annotation_legend, cytokine_annotation = cytokine_annotation, ...)
     dev.off()
     upViewport()
     return()
@@ -716,11 +716,13 @@ kmeans_pheatmap = function(mat, k = min(nrow(mat), 150), sd_limit = NA, ...){
 #' @param height manual option for determining the output file height in inches.
 #' @param row_annotation data frame that specifies the annotations shown on the 
 #' rows. Each row defines the features for a specific row. The rows in the data 
-#' and rows in the annotation are matched using corresponding row names. Currently only binary
-#' categorical variables are supported with a default black and white color scheme. The category labels are
+#' and rows in the annotation are matched using corresponding row names.The category labels are
 #' given by the data frame column names.
-#' @param row_annotation_legend Not currently supported.
-#' @param row_annotation_colors Not currently supported.
+#' @param row_annotation_legend same interpretation as the column parameters.
+#' @param row_annotation_colors same interpretation as the column parameters
+#' @param cytokine_annotation is a data frame of binary factors with levels 0,1, that defines combinations
+#' of the categories for each column. They will be colored by their degree of functionality and ordered by degree of functionality
+#' and by amount of expression if column clustering is not done.
 #' @param \dots graphical parameters for the text used in plot. Parameters passed to 
 #' \code{\link{grid.text}}, see \code{\link{gpar}}. 
 #' 
@@ -755,7 +757,7 @@ kmeans_pheatmap = function(mat, k = min(nrow(mat), 150), sd_limit = NA, ...){
 #' pheatmap(test, cluster_row = FALSE, legend_breaks = -1:4, legend_labels = c("0", 
 #' "1e-4", "1e-3", "1e-2", "1e-1", "1"))
 #' pheatmap(test, cellwidth = 15, cellheight = 12, main = "Example heatmap")
-#' pheatmap(test, cellwidth = 15, cellheight = 12, fontsize = 8, filename = "test.pdf")
+#' #pheatmap(test, cellwidth = 15, cellheight = 12, fontsize = 8, filename = "test.pdf")
 #' 
 #' 
 #' # Generate column annotations
@@ -776,9 +778,20 @@ kmeans_pheatmap = function(mat, k = min(nrow(mat), 150), sd_limit = NA, ...){
 #' ann_colors = list(Var1 = Var1, Var2 = Var2)
 #' 
 #' #Specify row annotations
-#' row_ann <- data.frame(Cytokines=gl(2,nrow(test)/2),`Transcription Factors`=relevel(gl(2,nrow(test)/2),"2"))
+#' row_ann <- data.frame(foo=gl(2,nrow(test)/2),`Bar`=relevel(gl(2,nrow(test)/2),"2"))
 #' rownames(row_ann)<-rownames(test)
 #' pheatmap(test, annotation = annotation, annotation_legend = FALSE, drop_levels = FALSE,row_annotation = row_ann)
+#' 
+#' #Using cytokine annotations
+#' M<-matrix(rnorm(8*20),ncol=8)
+#' row_annotation<-data.frame(A=gl(4,nrow(M)/4),B=gl(4,nrow(M)/4))
+#' eg<-expand.grid(factor(c(0,1)),factor(c(0,1)),factor(c(0,1)))
+#' colnames(eg)<-c("IFNg","TNFa","IL2")
+#' rownames(eg)<-apply(eg,1,function(x)paste0(x,collapse=""))
+#' rownames(M)<-1:nrow(M)
+#' colnames(M)<-rownames(eg)
+#' cytokine_annotation=eg
+#' pheatmap(M,annotation=annotation,row_annotation=row_annotation,annotation_legend=TRUE,row_annotation_legend=TRUE,cluster_rows=FALSE,cytokine_annotation=cytokine_annotation,cluster_cols=FALSE)
 #' 
 #' # Specifying clustering from distance matrix
 #' drows = dist(test, method = "minkowski")

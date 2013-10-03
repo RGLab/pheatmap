@@ -156,14 +156,21 @@
   annotations shown on the rows. Each row defines the
   features for a specific row. The rows in the data and
   rows in the annotation are matched using corresponding
-  row names. Currently only binary categorical variables
-  are supported with a default black and white color
-  scheme. The category labels are given by the data frame
+  row names.The category labels are given by the data frame
   column names.}
 
-  \item{row_annotation_legend}{Not currently supported.}
+  \item{row_annotation_legend}{same interpretation as the
+  column parameters.}
 
-  \item{row_annotation_colors}{Not currently supported.}
+  \item{row_annotation_colors}{same interpretation as the
+  column parameters}
+
+  \item{cytokine_annotation}{is a data frame of binary
+  factors with levels 0,1, that defines combinations of the
+  categories for each column. They will be colored by their
+  degree of functionality and ordered by degree of
+  functionality and by amount of expression if column
+  clustering is not done.}
 
   \item{\dots}{graphical parameters for the text used in
   plot. Parameters passed to \code{\link{grid.text}}, see
@@ -212,7 +219,7 @@ pheatmap(test, display_numbers = TRUE, number_format = "\%.1e")
 pheatmap(test, cluster_row = FALSE, legend_breaks = -1:4, legend_labels = c("0",
 "1e-4", "1e-3", "1e-2", "1e-1", "1"))
 pheatmap(test, cellwidth = 15, cellheight = 12, main = "Example heatmap")
-pheatmap(test, cellwidth = 15, cellheight = 12, fontsize = 8, filename = "test.pdf")
+#pheatmap(test, cellwidth = 15, cellheight = 12, fontsize = 8, filename = "test.pdf")
 
 
 # Generate column annotations
@@ -233,9 +240,20 @@ Var2 = c("lightgreen", "navy")
 ann_colors = list(Var1 = Var1, Var2 = Var2)
 
 #Specify row annotations
-row_ann <- data.frame(Cytokines=gl(2,nrow(test)/2),`Transcription Factors`=relevel(gl(2,nrow(test)/2),"2"))
+row_ann <- data.frame(foo=gl(2,nrow(test)/2),`Bar`=relevel(gl(2,nrow(test)/2),"2"))
 rownames(row_ann)<-rownames(test)
 pheatmap(test, annotation = annotation, annotation_legend = FALSE, drop_levels = FALSE,row_annotation = row_ann)
+
+#Using cytokine annotations
+M<-matrix(rnorm(8*20),ncol=8)
+row_annotation<-data.frame(A=gl(4,nrow(M)/4),B=gl(4,nrow(M)/4))
+eg<-expand.grid(factor(c(0,1)),factor(c(0,1)),factor(c(0,1)))
+colnames(eg)<-c("IFNg","TNFa","IL2")
+rownames(eg)<-apply(eg,1,function(x)paste0(x,collapse=""))
+rownames(M)<-1:nrow(M)
+colnames(M)<-rownames(eg)
+cytokine_annotation=eg
+pheatmap(M,annotation=annotation,row_annotation=row_annotation,annotation_legend=TRUE,row_annotation_legend=TRUE,cluster_rows=FALSE,cytokine_annotation=cytokine_annotation,cluster_cols=FALSE)
 
 # Specifying clustering from distance matrix
 drows = dist(test, method = "minkowski")
