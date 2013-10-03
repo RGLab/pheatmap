@@ -806,7 +806,8 @@ pheatmap = function(mat, color = colorRampPalette(rev(brewer.pal(n = 7, name = "
     for(i in 1:ncol(cytokine_annotation)){
       if(!(class(cytokine_annotation[[i]])=="factor" & all(levels(cytokine_annotation[[i]])%in%c(0,1)))){
         stop("cytokine annotation must be a data frame with categorical factors containing levels 0,1")
-      }
+      }else
+        show_colnames<-FALSE
     }
   }
   # Preprocess matrix
