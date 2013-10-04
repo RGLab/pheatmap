@@ -1,5 +1,5 @@
 lo = function(rown, coln, nrow, ncol, cellheight = NA, cellwidth = NA, treeheight_col, treeheight_row, legend, annotation, annotation_colors, annotation_legend, main, fontsize, fontsize_row, fontsize_col,row_annotation,row_annotation_legend,row_annotation_colors, cytokine_annotation, ...){
-  
+  annot_legend_width = unit(0, "npc")
   #cytokine labels
   if(!is.na(cytokine_annotation[[1]][1])){
     cytn<-colnames(cytokine_annotation)
