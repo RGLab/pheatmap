@@ -70,7 +70,7 @@ lo = function(rown, coln, nrow, ncol, cellheight = NA, cellwidth = NA, treeheigh
   }
   else{
     annot_height = unit(0, "bigpts")
-    annot_legend_width = unit(0, "bigpts")
+    annot_legend_width = unit(0, "bigpts")+annot_legend_width
   }
   
   # Row annotations
@@ -85,7 +85,7 @@ lo = function(rown, coln, nrow, ncol, cellheight = NA, cellwidth = NA, treeheigh
     }
   }else{
     row_annotation_width = unit(0,"bigpts")
-    annot_legend_width= unit(0,"bigpts") #row legend appears in the same viewport as column legend
+    annot_legend_width= unit(0,"bigpts")+annot_legend_width #row legend appears in the same viewport as column legend
   }
   
   # cytokine annotations
@@ -416,7 +416,7 @@ heatmap_motor = function(matrix, border_color, cellwidth, cellheight, tree_col, 
     
     #label the rows
     pushViewport(vplayout(6,1))
-    pars_cytokine_annotations = list(colnames(converted_cytokine_annotations), fontsize = fontsize_col, ...)
+    pars_cytokine_annotations = list(rev(colnames(converted_cytokine_annotations)), fontsize = fontsize_col, ...)
     do.call(draw_rownames, pars_cytokine_annotations)
     upViewport()
   }
