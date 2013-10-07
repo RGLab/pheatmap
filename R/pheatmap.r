@@ -218,7 +218,9 @@ convert_cytokine_annotations = function(annotation){
   pal<-brewer.pal("Paired",n=mdegree)
   for(i in udegrees){
     ind<-which(annotation==1,TRUE)[,1]%in%which(ck_degree%in%i)
-    new_annotation[which(annotation==1,TRUE)[ind,]]<-pal[i]
+    for(j in which(ind)){
+      new_annotation[which(annotation==1,TRUE)[j,1],which(annotation==1,TRUE)[j,2]]<-pal[i]
+    }
   }
   colnames(new_annotation)<-colnames(annotation)
   rownames(new_annotation)<-rownames(annotation)
@@ -917,7 +919,7 @@ pheatmap = function(mat, color = colorRampPalette(rev(brewer.pal(n = 7, name = "
     if(!cluster_cols){
       ckr<-apply(cytokine_annotation,1,function(x)sum(as.numeric(as.character(x))))
       cytokine_annotation = cytokine_annotation[order(ckr),]
-      mat = mat[,order(ckr)] 
+      mat = mat[,rownames(cytokine_annotation)] 
     }
   }
   
