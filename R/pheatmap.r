@@ -174,6 +174,19 @@ draw_dendrogram = function(hc, horizontal = T){
   }
 }
 
+draw_headerplot = function(order,data,ylabel){
+  gr<-rectGrob(y=0.4,height=0.9)
+  pushViewport(viewport(height = unit(1, "grobheight", gr), width = unit(1, "grobwidth", gr)))
+  pushViewport(dataViewport(1:length(data),data,extension=c(1/length(data)/2,0.05)))
+  grid.rect()
+  grid.points(x=1:length(data),y=data[order],gp=gpar(cex=0.25,col="red",lwd=3))
+  grid.abline(slope=0,gp=gpar(lty=2,lwd=2))
+  grid.yaxis()
+  gr<-textGrob(ylabel,rot=90)
+  grid.text(ylabel,x=unit(-5,units="grobwidth",gr),y=0.5,rot=90)
+  popViewport(2)
+}
+
 draw_matrix = function(matrix, border_color, fmat, fontsize_number){
   n = nrow(matrix)
   m = ncol(matrix)
@@ -302,12 +315,12 @@ vplayout = function(x, y){
   return(viewport(layout.pos.row = x, layout.pos.col = y))
 }
 
-heatmap_motor = function(matrix, border_color, cellwidth, cellheight, tree_col, tree_row, treeheight_col, treeheight_row, filename, width, height, breaks, color, legend, annotation, annotation_colors, annotation_legend, main, fontsize, fontsize_row, fontsize_col, fmat, fontsize_number, row_annotation, row_annotation_legend, row_annotation_colors, cytokine_annotation, ...){
+heatmap_motor = function(matrix, border_color, cellwidth, cellheight, tree_col, tree_row, treeheight_col, treeheight_row, filename, width, height, breaks, color, legend, annotation, annotation_colors, annotation_legend, main, fontsize, fontsize_row, fontsize_col, fmat, fontsize_number, row_annotation, row_annotation_legend, row_annotation_colors, cytokine_annotation, headerplot,...){
   grid.newpage()
   
   
   # Set layout
-  mindim = lo(coln = colnames(matrix), rown = rownames(matrix), nrow = nrow(matrix), ncol = ncol(matrix), cellwidth = cellwidth, cellheight = cellheight, treeheight_col = treeheight_col, treeheight_row = treeheight_row, legend = legend, annotation = annotation, annotation_colors = annotation_colors, annotation_legend = annotation_legend, main = main, fontsize = fontsize, fontsize_row = fontsize_row, fontsize_col = fontsize_col, row_annotation = row_annotation, row_annotation_legend = row_annotation_legend, row_annotation_colors = row_annotation_colors, cytokine_annotation = cytokine_annotation,...)
+  mindim = lo(coln = colnames(matrix), rown = rownames(matrix), nrow = nrow(matrix), ncol = ncol(matrix), cellwidth = cellwidth, cellheight = cellheight, treeheight_col = treeheight_col, treeheight_row = treeheight_row, legend = legend, annotation = annotation, annotation_colors = annotation_colors, annotation_legend = annotation_legend, main = main, fontsize = fontsize, fontsize_row = fontsize_row, fontsize_col = fontsize_col, row_annotation = row_annotation, row_annotation_legend = row_annotation_legend, row_annotation_colors = row_annotation_colors, cytokine_annotation = cytokine_annotation,headerplot=headerplot,...)
   
   if(!is.na(filename)){
     pushViewport(vplayout(1:5, 1:6)) 
@@ -356,6 +369,13 @@ heatmap_motor = function(matrix, border_color, cellwidth, cellheight, tree_col, 
   if(!is.na(tree_col[[1]][1]) & treeheight_col != 0){
     pushViewport(vplayout(2, 2))
     draw_dendrogram(tree_col, horizontal = T)
+    upViewport()
+  }
+  
+  #draw headerplot
+  if(!is.na(headerplot) & treeheight_col != 0){
+    pushViewport(vplayout(2 , 2))
+    draw_headerplot(headerplot$order,headerplot$data,headerplot$ylabel)
     upViewport()
   }
   
@@ -624,6 +644,7 @@ generate_row_annotation_colours = function(annotation, annotation_colors, drop){
 }
 
 kmeans_pheatmap = function(mat, k = min(nrow(mat), 150), sd_limit = NA, ...){
+
   # Filter data
   if(!is.na(sd_limit)){
     s = apply(mat, 1, sd)
@@ -725,6 +746,9 @@ kmeans_pheatmap = function(mat, k = min(nrow(mat), 150), sd_limit = NA, ...){
 #' @param cytokine_annotation is a data frame of binary factors with levels 0,1, that defines combinations
 #' of the categories for each column. They will be colored by their degree of functionality and ordered by degree of functionality
 #' and by amount of expression if column clustering is not done.
+#' @param headerplot is a list with two components, order and data. Order tells how to reorder the columns of the matrix. 
+#' Data is some summary statistic over the columns which will be plotted in the header where the column cluster tree usually appears.
+#' Cytokine ordering is ignored when the headerplot argument is passed.
 #' @param \dots graphical parameters for the text used in plot. Parameters passed to 
 #' \code{\link{grid.text}}, see \code{\link{gpar}}. 
 #' 
@@ -801,7 +825,25 @@ kmeans_pheatmap = function(mat, k = min(nrow(mat), 150), sd_limit = NA, ...){
 #' pheatmap(test, clustering_distance_rows = drows, clustering_distance_cols = dcols)
 #' @importFrom RColorBrewer brewer.pal
 #' @export
-pheatmap = function(mat, color = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100), kmeans_k = NA, breaks = NA, border_color = "grey60", cellwidth = NA, cellheight = NA, scale = "none", cluster_rows = TRUE, cluster_cols = TRUE, clustering_distance_rows = "euclidean", clustering_distance_cols = "euclidean", clustering_method = "complete",  treeheight_row = ifelse(cluster_rows, 50, 0), treeheight_col = ifelse(cluster_cols, 50, 0), legend = TRUE, legend_breaks = NA, legend_labels = NA, annotation = NA, annotation_colors = NA, annotation_legend = TRUE, drop_levels = TRUE, show_rownames = T, show_colnames = T, main = NA, fontsize = 10, fontsize_row = fontsize, fontsize_col = fontsize, display_numbers = F, number_format = "%.2f", fontsize_number = 0.8 * fontsize, filename = NA, width = NA, height = NA, row_annotation = NA, row_annotation_legend = TRUE, row_annotation_colors=NA, cytokine_annotation=NA, ...){
+pheatmap = function(mat, color = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100), kmeans_k = NA, breaks = NA, border_color = "grey60", cellwidth = NA, cellheight = NA, scale = "none", cluster_rows = TRUE, cluster_cols = TRUE, clustering_distance_rows = "euclidean", clustering_distance_cols = "euclidean", clustering_method = "complete",  treeheight_row = ifelse(cluster_rows, 50, 0), treeheight_col = ifelse(cluster_cols, 50, 0), legend = TRUE, legend_breaks = NA, legend_labels = NA, annotation = NA, annotation_colors = NA, annotation_legend = TRUE, drop_levels = TRUE, show_rownames = T, show_colnames = T, main = NA, fontsize = 10, fontsize_row = fontsize, fontsize_col = fontsize, display_numbers = F, number_format = "%.2f", fontsize_number = 0.8 * fontsize, filename = NA, width = NA, height = NA, row_annotation = NA, row_annotation_legend = TRUE, row_annotation_colors=NA, cytokine_annotation=NA, headerplot=NA, ...){
+  #Do the arguments even make sense?
+  oldwarn<-options("warn")
+  options("warn"=-1)
+  if(!is.na(headerplot)&(cluster_cols)){
+    options("warn"=0)
+    warning("columns will NOT be clustered when providing headerplot.")
+    options("warn"=-1)
+  }
+  
+  # The headerplot will order the columns by headerplot$order and plot the data in headerplot$data above the heatmap.
+  # clustering of columns should be turned off, and ordering of columns by cytokine degree of functionality will be overridden.
+  if(!is.na(headerplot)&!cluster_cols){
+    #reorder the columns of the matrix according to headerplot
+    mat <- mat[,headerplot$order]
+    cluster_cols <- FALSE; #Reset this so we don't do clustering when providing a headerplot.
+    treeheight_col = 100 #set to default value as if cluster_cols was true
+    treeheight_row = 50
+  }
   
   #check that the cytokine annotation (if it exists), is in the right form
   if(!is.na(cytokine_annotation[[1]][1])){
@@ -842,7 +884,9 @@ pheatmap = function(mat, color = colorRampPalette(rev(brewer.pal(n = 7, name = "
   }
   else{
     tree_row = NA
-    treeheight_row = 0
+    if(is.na(headerplot)){
+      treeheight_row = 0
+    }
   }
   
   if(cluster_cols){
@@ -851,7 +895,8 @@ pheatmap = function(mat, color = colorRampPalette(rev(brewer.pal(n = 7, name = "
   }
   else{
     tree_col = NA
-    treeheight_col = 0
+    if(is.na(headerplot))
+      treeheight_col = 0
   }
   
   # Format numbers to be displayed in cells 
@@ -912,14 +957,17 @@ pheatmap = function(mat, color = colorRampPalette(rev(brewer.pal(n = 7, name = "
   if(!is.na(cytokine_annotation[[1]][1])){
     cytokine_annotation = cytokine_annotation[colnames(mat),ncol(cytokine_annotation):1,drop=FALSE]
     
-    #order the columns by max functionality
+    #order the columns by max functionality 
     cka<-apply(cytokine_annotation,2,function(x)sum(as.numeric(as.character(x))))
     cytokine_annotation = cytokine_annotation[,order(cka,decreasing=TRUE),drop=FALSE]
     
-    if(!cluster_cols){
+    if(!cluster_cols&is.na(headerplot)){
       ckr<-apply(cytokine_annotation,1,function(x)sum(as.numeric(as.character(x))))
       cytokine_annotation = cytokine_annotation[order(ckr),]
       mat = mat[,rownames(cytokine_annotation)] 
+    }else if(!is.na(headerplot)){
+      #reorder the cytokine column annotation according to headerplot order
+      cytokine_annotation<-cytokine_annotation[headerplot$order,]
     }
   }
   
@@ -930,10 +978,10 @@ pheatmap = function(mat, color = colorRampPalette(rev(brewer.pal(n = 7, name = "
   if(!show_colnames){
     colnames(mat) = NULL
   }
-  
+    
   # Draw heatmap
-  heatmap_motor(mat, border_color = border_color, cellwidth = cellwidth, cellheight = cellheight, treeheight_col = treeheight_col, treeheight_row = treeheight_row, tree_col = tree_col, tree_row = tree_row, filename = filename, width = width, height = height, breaks = breaks, color = color, legend = legend, annotation = annotation, annotation_colors = annotation_colors, annotation_legend = annotation_legend, main = main, fontsize = fontsize, fontsize_row = fontsize_row, fontsize_col = fontsize_col, fmat = fmat, fontsize_number = fontsize_number, row_annotation = row_annotation, row_annotation_legend = row_annotation_legend, row_annotation_colors = row_annotation_colors, cytokine_annotation = cytokine_annotation, ...)
-  
+  heatmap_motor(mat, border_color = border_color, cellwidth = cellwidth, cellheight = cellheight, treeheight_col = treeheight_col, treeheight_row = treeheight_row, tree_col = tree_col, tree_row = tree_row, filename = filename, width = width, height = height, breaks = breaks, color = color, legend = legend, annotation = annotation, annotation_colors = annotation_colors, annotation_legend = annotation_legend, main = main, fontsize = fontsize, fontsize_row = fontsize_row, fontsize_col = fontsize_col, fmat = fmat, fontsize_number = fontsize_number, row_annotation = row_annotation, row_annotation_legend = row_annotation_legend, row_annotation_colors = row_annotation_colors, cytokine_annotation = cytokine_annotation, headerplot=headerplot,...)
+  options("warn"=oldwarn$warn)
   invisible(list(tree_row = tree_row, tree_col = tree_col, kmeans = km))
 }
 

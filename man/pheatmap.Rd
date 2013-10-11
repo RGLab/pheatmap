@@ -23,7 +23,7 @@
     width = NA, height = NA, row_annotation = NA,
     row_annotation_legend = TRUE,
     row_annotation_colors = NA, cytokine_annotation = NA,
-    ...)
+    headerplot = NA, ...)
 }
 \arguments{
   \item{mat}{numeric matrix of the values to be plotted.}
@@ -171,6 +171,13 @@
   degree of functionality and ordered by degree of
   functionality and by amount of expression if column
   clustering is not done.}
+
+  \item{headerplot}{is a list with two components, order
+  and data. Order tells how to reorder the columns of the
+  matrix. Data is some summary statistic over the columns
+  which will be plotted in the header where the column
+  cluster tree usually appears. Cytokine ordering is
+  ignored when the headerplot argument is passed.}
 
   \item{\dots}{graphical parameters for the text used in
   plot. Parameters passed to \code{\link{grid.text}}, see
