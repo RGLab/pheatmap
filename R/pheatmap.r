@@ -965,10 +965,10 @@ pheatmap = function(mat, color = colorRampPalette(rev(brewer.pal(n = 7, name = "
       ckr<-apply(cytokine_annotation,1,function(x)sum(as.numeric(as.character(x))))
       cytokine_annotation = cytokine_annotation[order(ckr),]
       mat = mat[,rownames(cytokine_annotation)] 
-    }else if(!is.na(headerplot)){
+    }#else if(!is.na(headerplot)){
       #reorder the cytokine column annotation according to headerplot order
-      cytokine_annotation<-cytokine_annotation[headerplot$order,]
-    }
+      #cytokine_annotation<-cytokine_annotation[headerplot$order,]
+    #}
   }
   
   if(!show_rownames){
